@@ -1,0 +1,105 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+    <!-- Posts -->
+    <article class="media content-section">
+    <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+    <div class="media-body">
+        <div class="article-metadata">
+          <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
+          <small class="text-muted">
+            {{ post.date_posted | date:"Y, F d" }} at {{ post.date_posted | date:"H:i:s" }}
+            {% if post.date_updated != post.date_posted %}
+              <div>
+                (Last updated on {{ post.date_updated | date:"Y, F d" }} at {{ post.date_updated | date:"H:i:s" }})
+              </div>
+            {% endif %}
+          </small>
+          {% if post.author == user %}
+            <div>
+              <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' post.slug %}">Update</a>
+              <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' post.slug %}">Delete</a>
+            </div>
+          {% endif %}
+        </div>
+        <h2 class="article-title">{{ post.title }}</h2>
+        <p class="article-content">{{ post.content }}</p>
+    </div>
+    
+    <div class="mr-3 mt-2">
+      Votes: {{ net_votes }}
+    </div>
+    
+    <form method="POST" action="{% url 'upvote-post' %}">
+      {% csrf_token %}
+      {% if is_upvoted %}
+        <button class="btn btn-danger" type="submit" name="post_id" value="{{ post.id }}">
+          Downvote
+        </button>
+      {% else %}
+        <button class="btn btn-primary" type="submit" name="post_id" value="{{ post.id }}">
+          Upvote
+        </button>
+      {% endif %}
+    </form>
+
+    <form method="POST" action="{% url 'downvote-post' %}">
+      {% csrf_token %}
+      {% if is_downvoted %}
+        <button class="btn btn-primary" type="submit" name="post_id" value="{{ post.id }}">
+          Upvote
+        </button>
+      {% else %}
+        <button class="btn btn-danger" type="submit" name="post_id" value="{{ post.id }}">
+          Downvote
+        </button>
+      {% endif %}
+    </form>
+    
+    </article>
+
+    <!-- Comments -->
+    <div class="col-md-8 card mb-4 mt-3">
+      <div class="card-body">
+        {% if not comments %}
+          <h3>No comments yet</h3>
+        {% else %}
+          <h3>{{ comments.count }} comments</h3>
+        {% endif %}
+
+        {% for comment in comments %}
+        <div class="comments" style="padding: 10px;">
+          <p class="font-weight-bold">
+            <div class="article-metadata">
+              <img class="rounded-circle comment-img" src="{{ comment.author.profile.image.url }}">
+              <a class="mr-2" href="{% url 'user-posts' comment.author.username %}">
+                {{ comment.author }}
+              </a>
+              <small class="text-muted font-weight-normal">
+                {{ comment.date_posted | date:"Y, F d" }} at {{ comment.date_posted | date:"H:i:s" }}
+              </small>
+            </div>
+          </p>
+          {{ comment.content | linebreaks }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="col-md-8 card mb-4  mt-3 ">
+      <div class="card-body">
+        {% if new_comment %}
+        {% else %}
+        <h3>Leave a comment</h3>
+        <form method="post" style="margin-top: 1.3em;">
+          {{ comment_form | crispy }}
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+{% endblock content %}

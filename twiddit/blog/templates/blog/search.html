@@ -1,0 +1,16 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+  {% if items %}
+    <p class="search-count">
+      Found <strong>{{ items.paginator.count }}</strong> result{{ items.paginator.count|pluralize }}
+    </p>
+    {% for i in items %}
+      {{ i.path }}
+    {% endfor %}
+  {% elif request.GET.q %}
+    <p class="search-no-results">
+    No results for "<strong>{{ request.GET.q }}</strong>"
+    </p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "blog/base.html" %}
+{% block content %}
+  <!-- Follow info -->
+  <div class="container">
+    <img class="rounded-circle article-img" src="{{ username.profile.image.url }}">
+    <div>
+
+      {% if is_followed_by %}
+        <p><a href="{% url 'blog:user-posts' username %}">@{{ username }}</a> Follows you</p>
+      {% else %}
+        <p><a href="{% url 'blog:user-posts' username %}">@{{ username }}</a></p>
+      {% endif %}
+
+      <p><a href="{% url 'blog:user-posts' username %}">View posts by @{{ username }}</a></p>
+
+      <h6>Followers: {{ followers_count }}</h6>
+      <h6>Following: {{ following_count }}</h6>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="container">
+    <h6>Followers list</h6>
+    {% for follower in followers_list %}
+    <ul>
+      <a href="{% url 'blog:user-posts' follower.get_follower %}">
+        <li>@{{ follower.get_follower }}</li>
+      </a>
+    </ul>
+    {% endfor %}
+
+    <br>
+
+    <h6>Following list</h6>
+    {% for following in following_list %}
+    <ul>
+      <a href="{% url 'blog:user-posts' following.get_following %}">
+        <li>@{{ following.get_following }}</li>
+      </a>
+    </ul>
+    {% endfor %}
+  </div>
+  
+  <br>
+
+  <!-- Show 'Follow'/'Following' button only if user is visiting another user's profile -->
+  {% if not visiting_own_profile %}
+    <form method="POST" action="{% url 'follow-toggle' username %}">
+      {% csrf_token %}
+      {% if is_following %}
+        <button class="btn btn-success" type="submit" name="post_id" value="{{ following }}">
+          Following
+        </button>
+      {% else %}
+        <button class="btn btn-primary" type="submit" name="post_id" value="{{ follower }}">
+          Follow
+        </button>
+      {% endif %}
+    </form>
+  {% endif %}
+
+{% endblock content %}
